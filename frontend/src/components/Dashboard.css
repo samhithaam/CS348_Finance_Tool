@@ -1,0 +1,17 @@
+/* src/components/Dashboard.css */
+.container {
+  min-height: 100vh;
+  padding: 20px;
+  background-color: #000; /* Change to your desired background color */
+  color: white;
+}
+
+.button {
+  padding: 10px 20px;
+  border-radius: 5px;
+  background-color: green; /* Change button color */
+  color: white;
+  border: none;
+  cursor: pointer;
+  margin: 5px; /* Add margin for spacing */
+}
