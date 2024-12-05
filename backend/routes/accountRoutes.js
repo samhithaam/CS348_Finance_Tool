@@ -1,25 +1,11 @@
 // routes/accountRoutes.js
 const express = require('express');
-const Account = require('../models/Accounts.js');
-const { sanitizeString, sanitizeObjectId } = require('../utils/sanitization'); // Import sanitization functions
+const Account = require('../models/Accounts.js'); // Ensure this model is correctly defined
 const router = express.Router();
 
 // Create a new account
 router.post('/', async (req, res) => {
-    let { user_id, account_name, balance, account_type } = req.body;
-
-    // Sanitize user input before using it
-    user_id = sanitizeString(user_id);
-    account_name = sanitizeString(account_name);
-    account_type = sanitizeString(account_type);
-
-    // Optionally sanitize balance if it's a number
-    balance = parseFloat(balance);  // Convert balance to number, reject if invalid
-
-    if (isNaN(balance)) {
-        return res.status(400).json({ message: 'Invalid balance' });
-    }
-
+    const { user_id, account_name, balance, account_type } = req.body;
     try {
         const newAccount = new Account({ user_id, account_name, balance, account_type });
         await newAccount.save();
@@ -29,12 +15,10 @@ router.post('/', async (req, res) => {
     }
 });
 
-// Get accounts by user ID
+// Get the account by ID
 router.get('/user/:user_id', async (req, res) => {
-    const sanitizedUserId = sanitizeString(req.params.user_id); // Sanitize user ID
-
     try {
-        const accounts = await Account.find({ user_id: sanitizedUserId });
+        const accounts = await Account.find({ user_id: req.params.user_id });
         res.json(accounts);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -42,15 +26,9 @@ router.get('/user/:user_id', async (req, res) => {
 });
 
 // Get account by ID
-router.get('/:id', async (req, res) => {
-    const sanitizedId = sanitizeObjectId(req.params.id); // Sanitize and validate ObjectId
-
-    if (!sanitizedId) {
-        return res.status(400).json({ message: 'Invalid account ID' });
-    }
-
+router.get('/:id', async (req, res) => { 
     try {
-        const account = await Account.findById(sanitizedId);
+        const account = await Account.findById(req.params.id);
         if (!account) {
             return res.status(404).json({ message: 'Account not found' });
         }
@@ -62,28 +40,8 @@ router.get('/:id', async (req, res) => {
 
 // Update an account
 router.put('/:id', async (req, res) => {
-    const sanitizedId = sanitizeObjectId(req.params.id); // Sanitize and validate ObjectId
-
-    if (!sanitizedId) {
-        return res.status(400).json({ message: 'Invalid account ID' });
-    }
-
-    let { user_id, account_name, balance, account_type } = req.body;
-
-    // Sanitize input fields
-    user_id = sanitizeString(user_id);
-    account_name = sanitizeString(account_name);
-    account_type = sanitizeString(account_type);
-
-    // Optionally sanitize balance if it's a number
-    balance = parseFloat(balance);  // Convert balance to number, reject if invalid
-
-    if (isNaN(balance)) {
-        return res.status(400).json({ message: 'Invalid balance' });
-    }
-
     try {
-        const updatedAccount = await Account.findByIdAndUpdate(sanitizedId, { user_id, account_name, balance, account_type }, { new: true });
+        const updatedAccount = await Account.findByIdAndUpdate(req.params.id, req.body, { new: true });
         if (!updatedAccount) {
             return res.status(404).json({ message: 'Account not found' });
         }
@@ -95,14 +53,8 @@ router.put('/:id', async (req, res) => {
 
 // Delete an account
 router.delete('/:id', async (req, res) => {
-    const sanitizedId = sanitizeObjectId(req.params.id); // Sanitize and validate ObjectId
-
-    if (!sanitizedId) {
-        return res.status(400).json({ message: 'Invalid account ID' });
-    }
-
     try {
-        const deletedAccount = await Account.findByIdAndDelete(sanitizedId);
+        const deletedAccount = await Account.findByIdAndDelete(req.params.id);
         if (!deletedAccount) {
             return res.status(404).json({ message: 'Account not found' });
         }
